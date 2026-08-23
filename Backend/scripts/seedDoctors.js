@@ -122,7 +122,12 @@ const seedDoctors = async () => {
 
         // In seedDoctors.js, when inserting:
 
-        const doctorsWithStatus = doctorsData.map(doc => ({ ...doc, status: 'approved' }));
+        const doctorsWithStatus = doctorsData.map(doc => ({
+            ...doc,
+            email: doc.email || `${doc.name.toLowerCase().replace(/[^a-z0-9]/g, '')}@example.com`,
+            phone: doc.phone || "+91 7676436093",
+            status: 'approved'
+        }));
         await Doctor.insertMany(doctorsWithStatus);
 
         console.log(`Seeded ${doctorsWithStatus.length} approved doctors successfully!`);
