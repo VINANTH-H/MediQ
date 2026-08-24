@@ -22,6 +22,9 @@ app.use('/api/rag', ragRoutes);
 import adminRoutes from './routes/adminRoutes.js';
 app.use('/api/admin', adminRoutes);
 
+import userRoutes from './routes/userRoutes.js';
+app.use('/api/users', userRoutes);
+
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
