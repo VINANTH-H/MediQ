@@ -1,4 +1,5 @@
 import User from "../models/User.js"
+import Doctor from "../models/Doctor.js"
 
 export const userRegisterSchema = {
 
@@ -38,7 +39,8 @@ export const userRegisterSchema = {
             options: async function (value) {
                 try {
                     const user = await User.findOne({ email: value })
-                    if (user) {
+                    const doctor = await Doctor.findOne({ email: value })
+                    if (user || doctor) {
                         throw new Error("The email is already taken")
                     }
 
@@ -74,9 +76,7 @@ export const userRegisterSchema = {
             errorMessage: "The Phno is required"
         },
         isMobilePhone: {
-            options: {
-                locale: 'en-IN'
-            },
+            options: ['en-IN'],
             errorMessage: "Phone Number is invalid"
         }
     }
