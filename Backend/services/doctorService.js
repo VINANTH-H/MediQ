@@ -1,28 +1,57 @@
 import Doctor from '../models/Doctor.js';
+import Appointment from '../models/Appointment.js';
+import { generateHourlySlots } from '../utils/timeUtils.js';
 
-const searchDoctors = async ({ specialty, time }) => {
+/**
+ * Searches for approved doctors of a specialty who are actually free
+ * on the requested date and 1-hour time slot range.
+ */
+const searchDoctors = async ({ specialty, date, time }) => {
     try {
-        const query = {};
-
-        // Only return doctors that have been approved by Admin
-        query.status = 'approved';
+        const query = { status: 'approved' };
 
         if (specialty) {
             query.specialization = specialty;
         }
 
-        if (time) {
-            query.availableTime = time;
+        // 1. Fetch all approved doctors matching the specialty
+        const doctors = await Doctor.find(query);
+
+        // If no date or time is collected yet, just return matching doctors by specialty
+        if (!date || !time) {
+            return doctors;
         }
 
-        let doctors = await Doctor.find(query);
+        const availableDoctors = [];
 
-        // Fallback: if no doctors found for specific time, return doctors by specialty
-        if (doctors.length === 0 && specialty) {
-            doctors = await Doctor.find({ specialization: specialty, status: 'approved' });
+        // 2. Filter doctors based on their actual availability for the requested slot
+        for (const doctor of doctors) {
+            // A. Generate all possible 1-hour slots for this doctor
+            let allSlots = [];
+            doctor.availableTime.forEach(range => {
+                allSlots = allSlots.concat(generateHourlySlots(range));
+            });
+
+            // B. Check if the doctor even works during the requested time slot
+            if (!allSlots.includes(time)) {
+                continue; // Doctor doesn't work at this time, skip
+            }
+
+            // C. Check if the doctor already has a booking at this time and date
+            const existingBooking = await Appointment.findOne({
+                doctor: doctor._id,
+                date,
+                timeSlot: time,
+                status: 'scheduled'
+            });
+
+            // If no booking exists, the doctor is free!
+            if (!existingBooking) {
+                availableDoctors.push(doctor);
+            }
         }
 
-        return doctors;
+        return availableDoctors;
     } catch (error) {
         console.error('Error searching doctors:', error);
         return [];
