@@ -8,7 +8,7 @@ import Appointment from '../models/Appointment.js';
 import User from '../models/User.js';
 
 const chat = async (req, res) => {
-    const { conversationId, message } = req.body;
+    const { conversationId, message, doctorId } = req.body;
 
     if (!message) {
         return res.status(400).json({ error: 'Message is required' });
@@ -19,8 +19,8 @@ const chat = async (req, res) => {
         const conversation = await getOrCreateConversation(conversationId);
         let uiComponent = null;
 
-        // --- STATE: APPOINTMENT CONFIRMED (User is on the Invoice stage) ---
-        if (conversation.status === 'appointment_confirmed') {
+        // --- STATE: READY TO BOOK (User is on the Invoice stage) ---
+        if (conversation.status === 'ready_to_book') {
             conversation.messages.push({ role: 'user', content: message });
 
             const isConfirm = ['confirm', 'yes', 'proceed', 'book', 'pay'].some(keyword => 
@@ -40,7 +40,7 @@ const chat = async (req, res) => {
                 });
 
                 const doctor = await Doctor.findById(conversation.slots.doctorId);
-                conversation.status = 'completed';
+                conversation.status = 'appointment_confirmed';
                 aiMessage = `Success! Your appointment with ${doctor.name} on ${appointment.date} at ${appointment.timeSlot} has been booked.`;
                 
                 uiComponent = {
@@ -75,24 +75,17 @@ const chat = async (req, res) => {
         if (conversation.status === 'ready_for_doctor_search') {
             conversation.messages.push({ role: 'user', content: message });
 
-            // Find all doctors of this specialty to match against user selection
-            const availableDoctors = await Doctor.find({ specialization: conversation.slots.specialty, status: 'approved' });
             let selectedDoctor = null;
 
-            for (const doc of availableDoctors) {
-                // Match doctor name (e.g. "Rajesh" or "Sharma")
-                const names = doc.name.replace('Dr. ', '').split(' ');
-                const matches = names.some(n => message.toLowerCase().includes(n.toLowerCase()));
-                if (matches) {
-                    selectedDoctor = doc;
-                    break;
-                }
+            if (doctorId) {
+                // If frontend sent a specific doctorId, fetch it directly
+                selectedDoctor = await Doctor.findOne({ _id: doctorId, status: 'approved' });
             }
 
             let aiMessage = '';
             if (selectedDoctor) {
                 conversation.slots.doctorId = selectedDoctor._id;
-                conversation.status = 'appointment_confirmed';
+                conversation.status = 'ready_to_book';
                 aiMessage = `Excellent choice! I have prepared your booking invoice for ${selectedDoctor.name}. Please confirm the details.`;
 
                 // Fetch patient profile details for the invoice

@@ -17,7 +17,7 @@ const conversationSchema = new mongoose.Schema({
         doctorId: { type: mongoose.Schema.Types.ObjectId, ref: 'Doctor', default: null }
     },
     messages: [messageSchema],
-    status: { type: String, default: 'collecting_information', enum: ['collecting_information', 'ready_for_doctor_search', 'appointment_confirmed', 'completed'] }
+    status: { type: String, default: 'collecting_information', enum: ['collecting_information', 'ready_for_doctor_search', 'ready_to_book', 'appointment_confirmed'] }
 }, {
     timestamps: true
 });
