@@ -1,39 +1,67 @@
 import { useState } from "react";
+import axios from 'axios'
+
+import { useDispatch,useSelector } from "react-redux";
+import { addMessage,setConversationId } from "../Slices/chatSlice";
+
 import MessageInput from "../Components/MessageInput";
 import MessageList from "../Components/MessageList";
 
-export default function ChatPage(){
+export default function  ChatPage(){
+
+     const dispatch = useDispatch()
+     const messages = useSelector((state)=>{
+      return state.chat.messages
+     })
+
+       const conversationId = useSelector((state)=>{
+      return state.chat.conversationId
+     })
      const [input, setInput] = useState("");
-      const [messages, setMessages] = useState([
-    {
-      sender: "bot",
-      text: "Hi! How can I help you today?",
-    },
-  ]);
-  const [conversationId, setConversationId] = useState(null);
+   
   
-   const handleSend = () => {
+
+   const handleSend = async() => {
   if (input.trim() === "") {
     return;
   }
 
-  const newMessage = {
+  const userMessage = {
     sender: "user",
     text: input,
   };
+dispatch(addMessage(userMessage));
+ 
 
-  const botMessage = {
-    sender: "bot",
-    text: "I'll help you find the appropriate doctor.",
+
+  const requestBody = {
+    message: input,
   };
 
-  setMessages((previousMessages) => [
-    ...previousMessages,
-    newMessage,
-    botMessage,
-  ]);
-
+  if (conversationId) {
+    requestBody.conversationId = conversationId;
+  }
+ 
   setInput("");
+  try {
+    const response = await axios.post(
+      "http://localhost:5000/api/rag/chat",
+      requestBody
+    );
+    console.log(response.data);
+    dispatch(setConversationId(response.data.conversationId))
+
+    const botMessage = {
+        sender:"bot",
+        text: response.data.message,
+        uiComponent: response.data.uiComponent 
+    }
+
+    dispatch(addMessage(botMessage))
+
+} catch(err){
+    console.log("Error : ",err)
+}
 };
 
     return (
