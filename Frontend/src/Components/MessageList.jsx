@@ -1,5 +1,5 @@
 import DoctorCarousel from "./DoctorCarousel";
-
+import BookingInvoice from "./BookingInvoice";
 
 
 function MessageList({ messages }) {
@@ -16,6 +16,10 @@ function MessageList({ messages }) {
             <DoctorCarousel
               doctors={message.uiComponent.data}
             />
+          )}
+
+          {message.uiComponent?.type === "booking_invoice" && (
+            <BookingInvoice data={message.uiComponent.data}/>
           )}
 
         </div>

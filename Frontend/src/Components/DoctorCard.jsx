@@ -1,5 +1,18 @@
+import { useDispatch,useSelector } from "react-redux"
+import { proceedWithDoctor } from "../Slices/chatSlice"
+
 export default function DoctorCard({doctor}){
-    return (
+    
+    const dispatch = useDispatch()
+    const proceedLoading = useSelector((state)=>{
+      return state.chat.proceedLoading
+    })
+
+    const handleProceed =()=>{
+      console.log(doctor.id)
+      dispatch(proceedWithDoctor(doctor.id))
+    }
+  return (
         <div>
             
           <h3>{doctor.name}</h3>
@@ -19,10 +32,14 @@ export default function DoctorCard({doctor}){
         )}`}
         target="_blank"
         rel="noopener noreferrer"
-      >
-        📍 View On Map
+      >📍 View On Map
       </a>
-          <button>Book Appointment</button>
+          <button
+  onClick={handleProceed}
+  disabled={proceedLoading}
+>
+  {proceedLoading ? "Proceeding..." : "Proceed"}
+</button>
         </div>
         
     )
