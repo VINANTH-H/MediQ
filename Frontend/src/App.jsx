@@ -5,6 +5,7 @@ import DoctorsPage from './Pages/DoctorsPage';
 import MyAppointmentsPage from './Pages/MyAppointmentsPage';
 import ProfilePage from './Pages/ProfilePage';
 import UserLayout from './Layouts/userLayout';
+import DoctorProfilePage from "./Pages/DoctorProfilePage";
 
 
 function App() {
@@ -15,6 +16,9 @@ function App() {
       <Route path="chat" element={<ChatPage />} />
 
       <Route path="doctors" element={<DoctorsPage />} />
+
+      <Route path="/user/doctors/:id" element={<DoctorProfilePage />}
+/>
 
       <Route
         path="appointments"

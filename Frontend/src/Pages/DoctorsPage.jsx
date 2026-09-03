@@ -1,6 +1,7 @@
 import { useEffect,useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchDoctors } from "../Slices/doctorSlice";
+import DoctorProfileCard from "../Components/DoctorProfileCard";
 
 const DoctorsPage = () => {
   const dispatch = useDispatch();
@@ -42,11 +43,11 @@ const DoctorsPage = () => {
 </select>
 
       {doctors.map((doctor) => (
-        <div key={doctor._id}>
-          <h2>{doctor.name}</h2>
-          <p>{doctor.specialization}</p>
-        </div>
-      ))}
+  <DoctorProfileCard
+    key={doctor._id}
+    doctor={doctor}
+  />
+))}
     </div>
   );
 };
