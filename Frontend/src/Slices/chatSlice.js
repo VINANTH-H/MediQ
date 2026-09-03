@@ -4,7 +4,6 @@ import axios from "axios";
 const initialState = {
   messages: [],
   conversationId: null,
-  bookingDetails: null,
   bookingLoading: false,
   bookingError: null,
   bookingStatus: "idle",
@@ -52,17 +51,14 @@ export const proceedWithDoctor = createAsyncThunk(
 export const bookAppointment = createAsyncThunk(
   "chat/bookAppointment",
 
-  async (_, thunkAPI) => {
-    const state = thunkAPI.getState();
-
-    const bookingDetails = state.chat.bookingDetails;
+  async (bookingData, thunkAPI) => {
     try{
     const response = await axios.post("http://localhost:5000/api/appointments/book",
       {
-        doctorId: bookingDetails.doctorId,
-        date: bookingDetails.date,
-        timeSlot: bookingDetails.timeSlot,
-        symptoms: bookingDetails.symptoms,
+        doctorId: bookingData.doctorId,
+        date: bookingData.date,
+        timeSlot: bookingData.timeSlot,
+        symptoms: bookingData.symptoms || "General Consultation",
       }
     );
 
@@ -85,10 +81,6 @@ const chatSlice = createSlice({
     setConversationId: (state, action) => {
       state.conversationId = action.payload
     },
-
-    setBookingDetails: (state, action) => {
-      state.bookingDetails = action.payload;
-    },
   },
 
   extraReducers: (builder) => {
@@ -108,11 +100,6 @@ const chatSlice = createSlice({
         state.messages.push(botMessage);
 
         state.conversationId = response.conversationId;
-
-        state.bookingDetails = {
-          ...state.bookingDetails,
-          doctorId: response.state.slots.doctorId,
-        };
 
       }
     )
@@ -163,5 +150,5 @@ builder.addCase(proceedWithDoctor.rejected,(state, action) => {
   },
 
 })
-export const { addMessage, setConversationId, setBookingDetails } = chatSlice.actions;
+export const { addMessage, setConversationId } = chatSlice.actions;
 export default chatSlice.reducer;

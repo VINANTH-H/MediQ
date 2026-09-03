@@ -2,7 +2,7 @@ import { useState } from "react";
 import axios from 'axios'
 
 import { useDispatch,useSelector } from "react-redux";
-import { addMessage,setConversationId, setBookingDetails} from "../Slices/chatSlice";
+import { addMessage,setConversationId} from "../Slices/chatSlice";
 
 import MessageInput from "../Components/MessageInput";
 import MessageList from "../Components/MessageList";
@@ -51,17 +51,17 @@ dispatch(addMessage(userMessage));
     console.log(response.data);
     dispatch(setConversationId(response.data.conversationId))
 
-    if (response.data.status === "ready_for_doctor_search") {
-  const slots = response.data.state.slots;
+  //   if (response.data.status === "ready_for_doctor_search") {
+  // const slots = response.data.state.slots;
 
-  dispatch(
-    setBookingDetails({
-      symptoms: slots.symptom,
-      date: slots.date,
-      timeSlot: slots.time,
-    })
-  );
-}
+  // dispatch(
+  //   setBookingDetails({
+  //     symptoms: slots.symptom,
+  //     date: slots.date,
+  //     timeSlot: slots.time,
+  //   })
+  // );
+// }
 
     const botMessage = {
         sender:"bot",

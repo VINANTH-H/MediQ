@@ -8,7 +8,12 @@ export default function BookingInvoice({ data }) {
 );
 
     const handleBookAppointment =()=>{
-        dispatch(bookAppointment())
+        dispatch(bookAppointment({
+            doctorId: data.doctorId,
+            date: data.date,
+            timeSlot: data.timeSlot,
+            symptoms: data.symptom 
+        }))
     }
   return (
     <div>
@@ -34,7 +39,7 @@ export default function BookingInvoice({ data }) {
 ) : (
   <>
   {bookingError && (
-      <p>{bookingError.message || bookingError}</p>
+      <p style={{color: 'red'}}>{bookingError.error || bookingError.message || "An error occurred"}</p>
     )}
   <button
     onClick={handleBookAppointment}
