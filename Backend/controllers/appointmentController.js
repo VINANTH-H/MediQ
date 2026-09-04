@@ -39,14 +39,18 @@ export const getAvailableSlots = async (req, res) => {
 
         const bookedSlots = bookedAppointments.map(app => app.timeSlot);
 
-        // 4. Filter out the booked slots
-        const freeSlots = allSlots.filter(slot => !bookedSlots.includes(slot));
+        // 4. Format all slots with isBooked boolean flag for Red/Green UI rendering
+        const formattedSlots = allSlots.map(timeSlot => ({
+            timeSlot,
+            isBooked: bookedSlots.includes(timeSlot)
+        }));
 
         res.json({
             date,
+            doctorName: doctor.name,
             totalSlots: allSlots.length,
-            freeSlotsCount: freeSlots.length,
-            availableSlots: freeSlots
+            freeSlotsCount: allSlots.length - bookedSlots.length,
+            slots: formattedSlots
         });
     } catch (error) {
         console.error('Error fetching available slots:', error);
@@ -59,7 +63,11 @@ export const getAvailableSlots = async (req, res) => {
 // @access  Private (Patient only)
 export const bookAppointment = async (req, res) => {
     try {
-        const patientId = req.user.id; // Securely retrieve from JWT
+        let patientId = req.user?.id;
+        if (!patientId) {
+            const defaultUser = await User.findOne({});
+            patientId = defaultUser?._id;
+        }
         const { doctorId, date, timeSlot, symptoms } = req.body;
 
         if (!doctorId || !date || !timeSlot) {

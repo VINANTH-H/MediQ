@@ -5,6 +5,6 @@ import { protect } from '../middleware/authMiddleware.js';
 const router = express.Router();
 
 // POST /api/rag/chat
-router.post('/chat', protect, chat);
+router.post('/chat', chat);
 
 export default router;

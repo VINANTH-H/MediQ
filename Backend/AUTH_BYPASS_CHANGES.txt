@@ -1,0 +1,62 @@
+====================================================================
+AUTHENTICATION BYPASS LOG (TEMPORARY TESTING CHANGES)
+====================================================================
+This file lists all files and changes modified to bypass JWT authentication
+middleware during development/testing before frontend auth is integrated.
+
+Refer to this file once frontend login is implemented to revert back to production security.
+
+--------------------------------------------------------------------
+1. FILE: Backend/routes/ragRoutes.js
+--------------------------------------------------------------------
+Current:
+  router.post('/chat', chat);
+
+Revert to:
+  router.post('/chat', protect, chat);
+
+--------------------------------------------------------------------
+2. FILE: Backend/controllers/ragController.js
+--------------------------------------------------------------------
+Current (Lines 33-37 & 100-104):
+  let patientId = req.user?.id;
+  if (!patientId) {
+      const defaultUser = await User.findOne({});
+      patientId = defaultUser?._id;
+  }
+
+  let patient = null;
+  if (req.user?.id) {
+      patient = await User.findById(req.user.id);
+  } else {
+      patient = await User.findOne({});
+  }
+
+Revert to:
+  const patientId = req.user.id;
+  const patient = await User.findById(req.user.id);
+
+--------------------------------------------------------------------
+3. FILE: Backend/routes/appointmentRoutes.js
+--------------------------------------------------------------------
+Current:
+  router.get('/slots', getAvailableSlots);
+  router.post('/book', bookAppointment);
+
+Revert to:
+  router.get('/slots', protect, getAvailableSlots);
+  router.post('/book', protect, restrictTo('user'), bookAppointment);
+
+--------------------------------------------------------------------
+4. FILE: Backend/controllers/appointmentController.js
+--------------------------------------------------------------------
+Current (Lines 62-66):
+  let patientId = req.user?.id;
+  if (!patientId) {
+      const defaultUser = await User.findOne({});
+      patientId = defaultUser?._id;
+  }
+
+Revert to:
+  const patientId = req.user.id;
+====================================================================

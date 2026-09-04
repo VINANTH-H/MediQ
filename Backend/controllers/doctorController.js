@@ -91,3 +91,51 @@ export const updateDoctorProfile = async (req, res) => {
         res.status(500).json({ error: 'Failed to update doctor profile' });
     }
 };
+
+// @desc    Get all approved doctors (Optional filter by specialization)
+// @route   GET /api/doctors
+// @access  Public
+export const getApprovedDoctors = async (req, res) => {
+    try {
+        const { specialization } = req.query;
+        const query = { status: 'approved' };
+
+        if (specialization && specialization !== 'All') {
+            query.specialization = specialization;
+        }
+
+        const doctors = await Doctor.find(query).select('-password');
+
+        res.json({
+            count: doctors.length,
+            doctors
+        });
+    } catch (error) {
+        console.error('Error fetching approved doctors:', error);
+        res.status(500).json({ error: 'Failed to fetch doctors' });
+    }
+};
+
+// @desc    Get a single doctor by ID
+// @route   GET /api/doctors/:id
+// @access  Public
+export const getDoctorById = async (req, res) => {
+    try {
+        const doctor = await Doctor.findById(req.params.id).select('-password');
+
+        if (!doctor) {
+            return res.status(404).json({ error: 'Doctor not found' });
+        }
+
+        res.json({ doctor });
+    } catch (error) {
+        console.error('Error fetching doctor by ID:', error);
+        
+        // Handle invalid MongoDB ObjectIds
+        if (error.kind === 'ObjectId') {
+            return res.status(404).json({ error: 'Doctor not found' });
+        }
+        
+        res.status(500).json({ error: 'Failed to fetch doctor' });
+    }
+};
