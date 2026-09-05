@@ -3,25 +3,25 @@ import { useDispatch, useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
 import { fetchDoctorById } from "../Slices/doctorSlice";
 import { fetchAvailableSlots } from "../Slices/appointmentSlice";
+import BookingModal from "../Components/BookingModal";
 
 const DoctorProfilePage = () => {
   const { id } = useParams();
   const dispatch = useDispatch();
   const [selectedDate, setSelectedDate] = useState("");
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalDate, setModalDate] = useState("");
+  const [selectedSlot, setSelectedSlot] = useState("");
+  const [symptoms, setSymptoms] = useState("");
+
+
+
 
   // Doctor Details
-  const {
-    selectedDoctor,
-    loading,
-    error,
-  } = useSelector((state) => state.doctor);
+  const {selectedDoctor,loading,error} = useSelector((state) => state.doctor);
 
   // Appointment slots details
-  const {
-  slots,
-  slotsLoading,
-  slotsError
-} = useSelector((state) => state.appointment);
+  const {slots,slotsLoading,slotsError} = useSelector((state) => state.appointment);
 
   useEffect(() => {
     dispatch(fetchDoctorById(id));
@@ -41,6 +41,20 @@ const DoctorProfilePage = () => {
 }, [dispatch, id, selectedDate]);
 
 
+useEffect(() => {
+  if (!isModalOpen || !modalDate) {
+    return;
+  }
+
+  dispatch(
+    fetchAvailableSlots({
+      doctorId: id,
+      date: modalDate,
+    })
+  );
+}, [dispatch, id, isModalOpen, modalDate]);
+
+
   if (loading) {
     return <p>Loading doctor...</p>;
   }
@@ -54,6 +68,15 @@ const DoctorProfilePage = () => {
   }
 console.log("Selected Date:", selectedDate);
 console.log("Slots" , slots)
+
+
+const handleBookAppointment = ()=>{
+  console.log("Book Appointment")
+  setIsModalOpen(true)
+  setModalDate("");
+   setSelectedSlot("");
+}
+console.log("Selected Slot:", selectedSlot);
  return (
   <div>
     <h1>{selectedDoctor.name}</h1>
@@ -112,6 +135,8 @@ console.log("Slots" , slots)
     <div>
   <h2>Available Slots</h2>
 
+  {!selectedDate && <p> Select the date to get the slots</p>}
+
   {slotsLoading && <p>Loading slots...</p>}
 
   {slotsError && (
@@ -142,8 +167,25 @@ console.log("Slots" , slots)
     </div>
   )}
 </div>
-    <button>Book Appointment</button>    
+    <button onClick={handleBookAppointment}>Book Appointment</button>
+    <br /> {/* remove later*/} 
+
+<BookingModal
+  isModalOpen={isModalOpen}
+  setIsModalOpen={setIsModalOpen}
+  selectedDoctor={selectedDoctor}
+  modalDate={modalDate}
+  setModalDate={setModalDate}
+  slots={slots}
+  slotsLoading={slotsLoading}
+  slotsError={slotsError}
+  selectedSlot={selectedSlot}
+  setSelectedSlot={setSelectedSlot}
+  setSymptoms={setSymptoms}
+  symptoms={symptoms}
+/>
   </div>
-);
+  
+ );
 }
 export default DoctorProfilePage;
